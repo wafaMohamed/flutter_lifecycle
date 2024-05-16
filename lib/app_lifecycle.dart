@@ -14,57 +14,86 @@ class _AppLifeCycleState extends State<AppLifeCycle>
   Timer? timer;
   int count = 0;
   bool active = true;
+  bool isHidden = false;
+  String appState = '';
 
   @override
   void initState() {
     super.initState();
-    // add observer instance
     WidgetsBinding.instance.addObserver(this);
-    //timer
-
     timerP();
   }
 
   void timerP() async {
     timer = Timer.periodic(
-        const Duration(
-          seconds: 1,
-        ), (timer) {
-      if (active) {
-        setState(() {
-          count += 1;
-        });
-      }
-    });
+      const Duration(seconds: 1),
+      (timer) {
+        if (active) {
+          setState(() {
+            count += 1;
+          });
+        }
+      },
+    );
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      active = true;
-      print("//AppLifecycle: Resumed ${state}//");
-    } else if (state == AppLifecycleState.inactive) {
-      active = false;
-      print("//AppLifecycle: Inactive ${state}//");
-    } else if (state == AppLifecycleState.paused) {
-      active = false;
-
-      print("//AppLifecycle: Paused${state}//");
-    } else if (state == AppLifecycleState.detached) {
-      print("//AppLifecycle: Detached ${state}//");
-    } else if (state == AppLifecycleState.hidden) {
-      print("//AppLifecycle: Hidden ${state}//");
-    }
+    setState(() {
+      if (state == AppLifecycleState.resumed) {
+        active = true;
+        isHidden = false;
+        appState = 'Resumed';
+        print("///Resumed///");
+      } else if (state == AppLifecycleState.inactive) {
+        active = false;
+        appState = 'Inactive';
+        print("///Resumed///");
+      } else if (state == AppLifecycleState.paused) {
+        active = false;
+        appState = 'Paused';
+        print("///Resumed///");
+      } else if (state == AppLifecycleState.detached) {
+        appState = 'Detached';
+        print("///Resumed///");
+      } else if (state == AppLifecycleState.hidden) {
+        isHidden = true;
+        appState = 'Hidden';
+        print("///Resumed///");
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('App Lifecycle Demo'),
+      ),
       body: Center(
-        child: Text(
-          count.toString(),
-          style: TextStyle(fontSize: 70),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Count: $count',
+              style: TextStyle(fontSize: 40),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'App State: $appState',
+              style: TextStyle(fontSize: 20),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  count = 0;
+                });
+              },
+              child: Text('Reset Count'),
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );
@@ -72,9 +101,9 @@ class _AppLifeCycleState extends State<AppLifeCycle>
 
   @override
   void dispose() {
-    // remove observer
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-    timer!.cancel();
+
+    WidgetsBinding.instance.removeObserver(this);
+    timer?.cancel();
   }
 }
